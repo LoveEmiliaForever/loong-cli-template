@@ -1,0 +1,9 @@
+{
+    "extends": [
+        "stylelint-config-standard"
+    ],
+    "rules": {},
+    "ignorePatterns": [
+        "node_modules/*"
+    ]
+}

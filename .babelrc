@@ -1,0 +1,8 @@
+{
+    "cacheDirectory": true,
+    "presets": [[
+        "env", {
+            "modules": false
+        }
+    ]]
+}
