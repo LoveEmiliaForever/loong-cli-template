@@ -1,5 +1,6 @@
 <template>
     <div id="root">
+        <img src="./assets/images/webpack.jpg">
         <div>{{ settingData }}</div>
         <el-button type="primary" size="default" @click="add"></el-button>
     </div>
