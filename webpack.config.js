@@ -1,51 +1,64 @@
 const ENV = process.env.ENV
 const isProd = ENV === 'production'
-const sourceMapFlag = process.env.SOURCEMAP // Boolean
-const sourceMapType = isProd ? 'hidden-source-map' : 'source-map' // source-map hidden-source-map nosources-source-map
+const sourceMapFlag = Boolean(process.env.SOURCEMAP) // Boolean
+const sourceMapType = isProd ? 'source-map' : 'source-map' // source-map hidden-source-map nosources-source-map
 
 const path = require('path')
 const { VueLoaderPlugin } = require('vue-loader')
 const ESLintPlugin = require('eslint-webpack-plugin')
-const CopyWebpackPlugin = require('copy-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const TerserPlugin = require('terser-webpack-plugin')
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin')
-const BundleAnalyzer = require('webpack-bundle-analyzer')
-const HappyPack = require('happypack')
+const BundleAnalyzer = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 const DashboardPlugin = require('webpack-dashboard/plugin')
-const SizePlugin = require('size-plugin')
-const SpeedMeasurePlugin = require('speed-measure-webpack-plugin')
-const smp = new SpeedMeasurePlugin()
 const webpack = require('webpack')
 
-module.exports = smp.wrap({
+module.exports = {
     entry: {
-        index: './src/index.js'
+        index: isProd ? './src/index.js' : ['vue', 'vuex', 'vue-axios', 'vue-router', 'axios', './src/index.js']
     },
     output: {
         path: path.join(__dirname, 'dist'),
-        filename: isProd ? '/js/[name]@[chunkhash].js' : '/js/[name].js',
-        chunkFilename: isProd ? '/js/[name]@async@[chunkhash].js' : '/js/[name]@async.js',
-        publicPath: './'
+        filename: isProd ? './js/[name]@[chunkhash].js' : './js/[name].js',
+        chunkFilename: isProd ? './js/[name]@async@[chunkhash].js' : './js/[name]@async.js',
+        publicPath: ''
     },
     module: {
         rules: [
             {
                 test: /\.vue$/,
-                include: /src/,
-                use: 'vue-loader'
+                // include: /src/,
+                use: [
+                    {
+                        loader: 'vue-loader',
+                        options: {
+                            compilerOptions: {
+                                sourceMap: sourceMapFlag,
+                            },
+                        },
+                    }
+                ]
             },
             {
                 test: /\.ts$/,
                 include: /src/,
-                use: 'happypack/loader?id=ts'
+                use: ['thread-loader', 'ts-loader']
             },
             {
                 test: /\.js$/,
                 include: /src/,
                 enforce: 'post',
-                use: 'happypack/loader?id=babel'
+                use: [
+                    'thread-loader',
+                    {
+                        loader: 'babel-loader',
+                        options: {
+                            "cacheDirectory": true,
+                            sourceMap: sourceMapFlag
+                        }
+                    }
+                ]
             },
             {
                 test: /\.css$/,
@@ -53,10 +66,42 @@ module.exports = smp.wrap({
                 use: [
                     {
                         loader: MiniCssExtractPlugin.loader,
+                    },
+                    {
+                        loader: 'css-loader',
                         options: {
-                            publicPath: './css/',
                             sourceMap: sourceMapFlag
                         }
+                    },
+                    {
+                        loader: 'postcss-loader',
+                        options: {
+                            sourceMap: sourceMapFlag
+                        }
+                    }
+                ]
+            },
+            {
+                test: /\.css$/,
+                include: path.join(__dirname, 'node_modules/element-plus'),
+                use: [
+                    {
+                        loader: MiniCssExtractPlugin.loader,
+                    },
+                    {
+                        loader: 'css-loader',
+                        options: {
+                            sourceMap: sourceMapFlag
+                        }
+                    }
+                ]
+            },
+            {
+                test: /\.(scss|sass)$/,
+                // include: /src/,
+                use: [
+                    {
+                        loader: MiniCssExtractPlugin.loader,
                     },
                     {
                         loader: 'css-loader',
@@ -83,8 +128,7 @@ module.exports = smp.wrap({
                 include: /src/,
                 type: 'asset/resource',
                 generator: {
-                    filename: '/assets/images/[name]@import.[ext]',
-                    publicPath: './assets/images/'
+                    filename: './assets/images/[name]@import.[ext]'
                 }
             },
             {
@@ -92,8 +136,7 @@ module.exports = smp.wrap({
                 include: /src/,
                 type: 'asset/resource',
                 generator: {
-                    filename: '/assets/fonts/[name]@import.[ext]',
-                    publicPath: './assets/fonts/'
+                    filename: './assets/fonts/[name]@import.[ext]'
                 }
             },
             {
@@ -101,8 +144,7 @@ module.exports = smp.wrap({
                 include: /src/,
                 type: 'asset/resource',
                 generator: {
-                    filename: '/assets/videos/[name]@import.[ext]',
-                    publicPath: './assets/videos/'
+                    filename: './assets/videos/[name]@import.[ext]'
                 }
             },
             {
@@ -110,8 +152,7 @@ module.exports = smp.wrap({
                 include: /src/,
                 type: 'asset/resource',
                 generator: {
-                    filename: '/assets/audios/[name]@import.[ext]',
-                    publicPath: './assets/audios/'
+                    filename: './assets/audios/[name]@import.[ext]'
                 }
             }
         ],
@@ -122,7 +163,9 @@ module.exports = smp.wrap({
             new TerserPlugin({
                 include: /\/src/,
                 parallel: true,
-                sourceMap: sourceMapFlag
+                terserOptions: {
+                    sourceMap: sourceMapFlag
+                }
             }),
             new CssMinimizerPlugin({
                 include: /\/src/,
@@ -136,53 +179,40 @@ module.exports = smp.wrap({
         },
         extensions: ['.js', '.vue']
     },
-    plugin: [
-        new webpack.DefinePlugin({
-            AUTHOR: JSON.stringify('LoveEmiliaForever')
-        }),
-        new HappyPack({
-            id: 'babel',
-            loaders: [{
-                loader: 'babel-loader'
-            }]
-        }),
-        new HappyPack({
-            id: 'ts',
-            loaders: [{
-                loader: 'ts-loader'
-            }]
+    plugins: [
+        new MiniCssExtractPlugin({
+            filename: './css/[name]@import.css',
+            chunkFilename: './css/[name]@async.css'
         }),
         new VueLoaderPlugin(),
         new ESLintPlugin({
             overrideConfigFile: path.join(__dirname, '.eslintrc.js'),
-            extensions: ['js', 'ts'],
-            exclude: ['node_modules/**'],
-            include: ['src/**/*']
+            extensions: ['js', 'ts']
         }),
-        new MiniCssExtractPlugin({
-            filename: '[name]@import.css',
-            chunkFilename: '[name]@async.css'
-        }),
-        new CopyWebpackPlugin([
-            { from: './src/assets', to: 'assets' }
-        ]),
-        new webpack.DllReferencePlugin({
-            manifest: require(path.join(__dirname, '/src/dll/manifest.json'))
-        }),
+        isProd ? new webpack.DllReferencePlugin({
+            manifest: require(path.join(__dirname, '/dist/dll/manifest.json'))
+        }) : null,
         new HtmlWebpackPlugin({
             title: 'my-web',
             filename: 'index.html',
             template: './src/template.html',
             favicon: './src/assets/images/loong.ico',
+            dllPath: isProd ? './dll/vendor.js' : '',
             chunks: ['index']
         }),
-        new BundleAnalyzer(),
-        new SizePlugin(),
+        isProd ? new BundleAnalyzer() : null,
         new DashboardPlugin()
-    ],
+    ].filter(item => item !== null),
     devtool: sourceMapFlag ? sourceMapType : false,
     mode: ENV,
     devServer: {
-        publicPath: '/dist/' //是该地址，则返回内存中的打包结果，否则返回源文件
+        devMiddleware: {
+            publicPath: '', // 所有输出文件的公共URL路径
+        },
+        static: {
+            directory: path.join(__dirname, '/src/assets') // 告诉服务器从哪里提供间接请求的内容
+        },
+        compress: true, // 启用gzip压缩
+        port: 7782 // 服务器端口号
     },
-})
+}

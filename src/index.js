@@ -14,7 +14,7 @@ import './mock'
 const debounce = (fn, delay) => {
     let timer = null
     return function () {
-        const context = this
+        const context = this // eslint-disable-line
         const args = arguments
         clearTimeout(timer)
         timer = setTimeout(function () {

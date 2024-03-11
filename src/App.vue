@@ -4,10 +4,15 @@
     </BasicFrame>
 </template>
 
-<style></style>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+}
+</style>
 
 <script>
-import BasicFrame from '@/components/BasicFrame.vue'
+import BasicFrame from './components/BasicFrame.vue'
 
 export default {
     name: 'App',

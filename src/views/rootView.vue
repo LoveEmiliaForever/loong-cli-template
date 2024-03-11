@@ -1,17 +1,22 @@
 <template>
     <div id="root">
-        <img src="./assets/images/webpack.jpg">
-        <div>{{ settingData }}</div>
-        <el-button type="primary" size="default" @click="add"></el-button>
+        <img class="webpack" src="../assets/images/webpack.jpg" alt="一张WebPack的图标" draggable="false">
     </div>
 </template>
 
 <style>
 #root {
+    height: 50vh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-around;
+    padding-bottom: 10vh;
+}
+
+.webpack {
+    width: 30vw;
+    user-select: none;
 }
 </style>
 
@@ -19,15 +24,6 @@
 import { mapState } from 'vuex'
 
 export default {
-    name: 'rootView',
-    methods: {
-        add () {
-            this.$store.commit({
-                type: 'changeSettingData',
-                data: none
-            })
-        }
-    },
-    computed: mapState(['settingData'])
+    name: 'rootView'
 }
 </script>

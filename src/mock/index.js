@@ -5,7 +5,7 @@ function pass (params) {
 }
 
 Mock.mock('/example', 'post', () => {
-    return {}
+    pass('pass')
 })
 
 Mock.mock(/\/example\?.*/, 'get', () => {

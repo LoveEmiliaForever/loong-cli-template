@@ -5,11 +5,12 @@ module.exports = {
 		browser: true,
 		es6: true
 	},
+	ignorePatterns: ["!src/*"],
 	parser: '@typescript-eslint/parser',
 	plugins: ['@typescript-eslint'],
 	extends: [
-		'airbnb-base',
-		//'eslint:recommended',
+		//'airbnb-base',
+		'eslint:recommended',
 		'plugin:@typescript-eslint/recommended',
 	],
 	rules: {

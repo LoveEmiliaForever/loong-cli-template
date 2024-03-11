@@ -21,15 +21,11 @@ export default createStore({
                 type: 'error'
                 })
             }
-        },
-        settingData: 0
+        }
     },
     getters: {
     },
     mutations: {
-        changeSettingData (state, payload) {
-        state.settingData += 1
-        }
     },
     actions: {
     },
